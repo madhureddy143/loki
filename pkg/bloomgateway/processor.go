@@ -11,6 +11,7 @@ import (
 
 	"github.com/grafana/dskit/concurrency"
 
+	iter "github.com/grafana/loki/v3/pkg/iter/v2"
 	v1 "github.com/grafana/loki/v3/pkg/storage/bloom/v1"
 	"github.com/grafana/loki/v3/pkg/storage/config"
 	"github.com/grafana/loki/v3/pkg/storage/stores/shipper/bloomshipper"
@@ -151,7 +152,7 @@ func (p *processor) processBlock(_ context.Context, blockQuerier *v1.BlockQuerie
 	}
 
 	tokenizer := v1.NewNGramTokenizer(schema.NGramLen(), schema.NGramSkip())
-	iters := make([]v1.PeekingIterator[v1.Request], 0, len(tasks))
+	iters := make([]iter.PeekingIterator[v1.Request], 0, len(tasks))
 
 	for _, task := range tasks {
 		// NB(owen-d): can be helpful for debugging, but is noisy
@@ -164,7 +165,7 @@ func (p *processor) processBlock(_ context.Context, blockQuerier *v1.BlockQuerie
 		// 	sp.LogKV("process block", blockID, "series", len(task.series))
 		// }
 
-		it := v1.NewPeekingIter(task.RequestIter(tokenizer))
+		it := iter.NewPeekingIter(task.RequestIter(tokenizer))
 		iters = append(iters, it)
 	}
 
