@@ -25,7 +25,7 @@ func iterEq(t *testing.T, exp []entry, got iter.EntryIterator) {
 			Timestamp:          time.Unix(0, exp[i].t),
 			Line:               exp[i].s,
 			StructuredMetadata: logproto.FromLabelsToLabelAdapters(exp[i].structuredMetadata),
-		}, got.Entry())
+		}, got.At())
 		require.Equal(t, exp[i].structuredMetadata.String(), got.Labels())
 		i++
 	}
@@ -463,10 +463,10 @@ func TestUnorderedChunkIterators(t *testing.T) {
 		require.Equal(t, true, forward.Next())
 		require.Equal(t, true, backward.Next())
 		require.Equal(t, true, smpl.Next())
-		require.Equal(t, time.Unix(int64(i), 0), forward.Entry().Timestamp)
-		require.Equal(t, time.Unix(int64(99-i), 0), backward.Entry().Timestamp)
-		require.Equal(t, float64(1), smpl.Sample().Value)
-		require.Equal(t, time.Unix(int64(i), 0).UnixNano(), smpl.Sample().Timestamp)
+		require.Equal(t, time.Unix(int64(i), 0), forward.At().Timestamp)
+		require.Equal(t, time.Unix(int64(99-i), 0), backward.At().Timestamp)
+		require.Equal(t, float64(1), smpl.At().Value)
+		require.Equal(t, time.Unix(int64(i), 0).UnixNano(), smpl.At().Timestamp)
 	}
 	require.Equal(t, false, forward.Next())
 	require.Equal(t, false, backward.Next())
@@ -507,7 +507,7 @@ func BenchmarkUnorderedRead(b *testing.B) {
 						panic(err)
 					}
 					for iterator.Next() {
-						_ = iterator.Entry()
+						_ = iterator.At()
 					}
 					if err := iterator.Close(); err != nil {
 						b.Fatal(err)
@@ -523,7 +523,7 @@ func BenchmarkUnorderedRead(b *testing.B) {
 				for n := 0; n < b.N; n++ {
 					iterator := tc.c.SampleIterator(context.Background(), time.Unix(0, 0), time.Unix(0, math.MaxInt64), countExtractor)
 					for iterator.Next() {
-						_ = iterator.Sample()
+						_ = iterator.At()
 					}
 					if err := iterator.Close(); err != nil {
 						b.Fatal(err)
@@ -545,7 +545,7 @@ func TestUnorderedIteratorCountsAllEntries(t *testing.T) {
 		panic(err)
 	}
 	for iterator.Next() {
-		next := iterator.Entry().Timestamp.UnixNano()
+		next := iterator.At().Timestamp.UnixNano()
 		require.GreaterOrEqual(t, next, i)
 		i = next
 		ct++
@@ -559,10 +559,10 @@ func TestUnorderedIteratorCountsAllEntries(t *testing.T) {
 	i = 0
 	smpl := c.SampleIterator(context.Background(), time.Unix(0, 0), time.Unix(0, math.MaxInt64), countExtractor)
 	for smpl.Next() {
-		next := smpl.Sample().Timestamp
+		next := smpl.At().Timestamp
 		require.GreaterOrEqual(t, next, i)
 		i = next
-		ct += int(smpl.Sample().Value)
+		ct += int(smpl.At().Value)
 	}
 	require.Equal(t, c.Size(), ct)
 

@@ -286,7 +286,7 @@ func (hb *unorderedHeadBlock) Iterator(ctx context.Context, direction logproto.D
 		stats.FromContext(ctx).SetQueryReferencedStructuredMetadata()
 	}
 	if len(streams) == 0 {
-		return iter.NoopIterator
+		return iter.NoopEntryIterator
 	}
 	streamsResult := make([]logproto.Stream, 0, len(streams))
 	for _, stream := range streams {
@@ -343,7 +343,7 @@ func (hb *unorderedHeadBlock) SampleIterator(
 	}
 
 	if len(series) == 0 {
-		return iter.NoopIterator
+		return iter.NoopSampleIterator
 	}
 	seriesRes := make([]logproto.Series, 0, len(series))
 	for _, s := range series {

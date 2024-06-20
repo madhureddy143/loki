@@ -1305,7 +1305,7 @@ func streamsForFieldDetection(i iter.EntryIterator, size uint32) (logqlmodel.Str
 	// value here because many unit tests start at time.Unix(0,0)
 	lastEntry := time.Unix(-100, 0)
 	for respSize < size && i.Next() {
-		streamLabels, entry := i.Labels(), i.Entry()
+		streamLabels, entry := i.Labels(), i.At()
 
 		// Always going backward as the direction for field detection is hard-coded to BACKWARD
 		shouldOutput := entry.Timestamp.Equal(lastEntry) || entry.Timestamp.Before(lastEntry)
@@ -1321,7 +1321,7 @@ func streamsForFieldDetection(i iter.EntryIterator, size uint32) (logqlmodel.Str
 				streams[streamLabels] = stream
 			}
 			stream.Entries = append(stream.Entries, entry)
-			lastEntry = i.Entry().Timestamp
+			lastEntry = i.At().Timestamp
 			respSize++
 		}
 	}
@@ -1331,5 +1331,5 @@ func streamsForFieldDetection(i iter.EntryIterator, size uint32) (logqlmodel.Str
 		result = append(result, *stream)
 	}
 	sort.Sort(result)
-	return result, i.Error()
+	return result, i.Err()
 }
